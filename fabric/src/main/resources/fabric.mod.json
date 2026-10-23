@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "wyvern",
+  "name": "Wyvern",
+  "version": "${version}",
+  "description": "${description}",
+  "license": "GPL-3.0",
+  "contact": {
+    "homepage": "https://github.com/eaglercraft-clients/wyvern",
+    "issues": "https://github.com/eaglercraft-clients/wyvern/issues",
+    "sources": "https://github.com/eaglercraft-clients/wyvern"
+  },
+  "icon": "assets/wyvern/textures/squarelogo.png",
+  "environment": "*",
+  "authors": [
+    "Matsv",
+    "kennytv",
+    "Gerrygames",
+    "creeper123123321",
+    "ForceUpdate1",
+    "EnZaXD"
+  ],
+  "entrypoints": {
+    "viafabric:via_api_initialized": [
+      "org.eaglercraftclients.wyvern.ViaFabricAddon"
+    ]
+  },
+  "depends": {
+    "viafabric": ">=0.4.14"
+  },
+    "custom": {
+        "modmenu:api": true,
+        "modmenu": {
+            "badges": [ "library" ],
+            "parent": "viafabric"
+        }
+    }
+}

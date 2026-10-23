@@ -1,0 +1,125 @@
+/*
+ * This file is part of Wyvern, a fork of ViaBackwards (https://github.com/ViaVersion/ViaBackwards)
+ * Copyright (C) 2016-2026 ViaVersion and contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.eaglercraftclients.wyvern.protocol.v1_21_2to1_21.storage;
+
+import org.eaglercraftclients.wyvern.api.entities.storage.PlayerPosRotStorage;
+import org.eaglercraftclients.wyvern.protocol.v1_21_2to1_21.Protocol1_21_2To1_21;
+import com.viaversion.viaversion.api.connection.UserConnection;
+import com.viaversion.viaversion.api.protocol.packet.PacketWrapper;
+import com.viaversion.viaversion.api.type.Types;
+import com.viaversion.viaversion.protocols.v1_21to1_21_2.packet.ServerboundPackets1_21_2;
+
+public final class PlayerStorage extends PlayerPosRotStorage {
+    private static final PlayerInput EMPTY = new PlayerInput(false, false, false, false, false, false, false);
+    private static final float PLAYER_JUMP_HEIGHT = 0.42F;
+
+    private boolean playerCommandTrackedSneaking;
+    private boolean playerCommandTrackedSprinting;
+
+    private PlayerInput lastInput = EMPTY;
+    private double prevX;
+    private double prevY;
+    private double prevZ;
+    private boolean tickStarted;
+    private boolean tickEndedEarly;
+
+    public void tick(final UserConnection user) {
+        final double deltaX = x() - prevX;
+        final double deltaY = y() - prevY;
+        final double deltaZ = z() - prevZ;
+
+        final double magnitude = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+        double directionX = magnitude > 0 ? deltaX / magnitude : 0;
+        double directionZ = magnitude > 0 ? deltaZ / magnitude : 0;
+
+        directionX = Math.max(-1, Math.min(1, directionX));
+        directionZ = Math.max(-1, Math.min(1, directionZ));
+
+        final double angle = Math.toRadians(-yRot());
+        final double newDirectionX = directionX * Math.cos(angle) - directionZ * Math.sin(angle);
+        final double newDirectionZ = directionX * Math.sin(angle) + directionZ * Math.cos(angle);
+
+        final boolean forward = newDirectionZ >= 0.65F;
+        final boolean backwards = newDirectionZ <= -0.65F;
+        final boolean left = newDirectionX >= 0.65F;
+        final boolean right = newDirectionX <= -0.65F;
+        final boolean jump = Math.abs(deltaY - PLAYER_JUMP_HEIGHT) <= 1E-4F;
+
+        final PlayerInput input = new PlayerInput(forward, backwards, left, right, jump, playerCommandTrackedSneaking, playerCommandTrackedSprinting);
+        if (!lastInput.equals(input)) {
+            final PacketWrapper playerInputPacket = PacketWrapper.create(ServerboundPackets1_21_2.PLAYER_INPUT, user);
+            byte flags = 0;
+            flags = (byte) (flags | (input.forward() ? 1 : 0));
+            flags = (byte) (flags | (input.backward() ? 2 : 0));
+            flags = (byte) (flags | (input.left() ? 4 : 0));
+            flags = (byte) (flags | (input.right() ? 8 : 0));
+            flags = (byte) (flags | (input.jump() ? 16 : 0));
+            flags = (byte) (flags | (input.sneak() ? 32 : 0));
+            flags = (byte) (flags | (input.sprint() ? 64 : 0));
+            playerInputPacket.write(Types.BYTE, flags);
+
+            playerInputPacket.sendToServer(Protocol1_21_2To1_21.class);
+            lastInput = input;
+        }
+
+        this.prevX = x();
+        this.prevY = y();
+        this.prevZ = z();
+    }
+
+    public void setPlayerCommandTrackedSneaking(final boolean playerCommandTrackedSneaking) {
+        this.playerCommandTrackedSneaking = playerCommandTrackedSneaking;
+    }
+
+    public void setPlayerCommandTrackedSprinting(final boolean playerCommandTrackedSprinting) {
+        this.playerCommandTrackedSprinting = playerCommandTrackedSprinting;
+    }
+
+    // Old clients send exactly one movement packet per tick, so the next one marks the end of the current tick
+    public boolean startTick() {
+        if (!tickStarted) {
+            tickStarted = true;
+            return false;
+        }
+
+        tickEndedEarly = true;
+        return true;
+    }
+
+    // Skip a single tick end after one was already sent early above, keeping the number of ticks the same
+    public boolean endTick() {
+        if (tickEndedEarly) {
+            tickEndedEarly = false;
+            return false;
+        }
+
+        tickStarted = false;
+        return true;
+    }
+
+    public boolean setSneaking(final boolean sneaking) {
+        final boolean changed = this.playerCommandTrackedSneaking != sneaking;
+        this.playerCommandTrackedSneaking = sneaking;
+        return changed;
+    }
+
+    public record PlayerInput(boolean forward, boolean backward, boolean left, boolean right, boolean jump,
+                              boolean sneak, boolean sprint) {
+    }
+
+}

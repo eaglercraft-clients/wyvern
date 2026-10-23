@@ -1,0 +1,25 @@
+plugins {
+    base
+    id("vb.base-conventions") apply false
+    id("vb.shadow-conventions") apply false
+}
+
+allprojects {
+    group = "com.viaversion"
+    version = property("projectVersion") as String // from gradle.properties
+    description = "Allows the connection of older clients to newer server versions for Minecraft servers."
+}
+
+val main = setOf(
+    projects.wyvern,
+    projects.wyvernCommon,
+    projects.wyvernBukkit,
+    projects.wyvernVelocity
+).map { it.path }
+
+subprojects {
+    when (path) {
+        in main -> plugins.apply("vb.shadow-conventions")
+        else -> plugins.apply("vb.base-conventions")
+    }
+}
