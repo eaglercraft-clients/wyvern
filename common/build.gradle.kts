@@ -26,6 +26,17 @@ dependencies {
     compileOnlyApi(libs.checkerQual)
 }
 
+// Tests that run Wyvern inside Wyrm's in-client Via (WyvernClient). They need Wyrm's `client` module, which is not on
+// the public ViaVersion repository: publish Wyrm to Maven Local first, then pass -PwithWyrm. See docs/BUILDING.md.
+if (providers.gradleProperty("withWyrm").isPresent) {
+    sourceSets.test { java.srcDir("src/wyrmTest/java") }
+    dependencies {
+        testImplementation("com.viaversion:viaversion-client:${libs.versions.viaver.get()}")
+        testImplementation(libs.netty)
+        testImplementation(libs.guava)
+    }
+}
+
 java {
     withJavadocJar()
 }

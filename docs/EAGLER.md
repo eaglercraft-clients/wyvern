@@ -37,6 +37,22 @@ naming convention of this fork; a plugin that does not use it will not see the t
 Eaglercraft connection itself (EaglerXServer on Velocity or BungeeCord), the Eaglercraft channels never reach the backend and
 this bridge is not needed for them.
 
+## Inside an Eaglercraft client (newer servers)
+
+A client that embeds Via with [Wyrm](https://github.com/eaglercraft-clients/wyrm)'s `client` module can join servers
+*newer* than the game by adding Wyvern. `WyvernClient` registers Wyvern's protocols with Via, with its default settings
+kept in memory (nothing is read or written):
+
+```java
+ClientVia.start(new WyvernClient());
+if (ClientVia.supports(nativeProtocol, serverProtocol)) { /* ClientPipeline.install(...) */ }
+```
+
+Tests (`common/src/wyrmTest`) push a real handshake and login through Via's handlers: a 1.12.2 game joins 1.21 and 26.2
+servers, and a 26.2 game joins a 26.3 server. A 1.8 game cannot go up through Wyvern alone: the step from 1.8 to 1.9 is
+ViaRewind's (Wyrm keeps a copy in `third_party/viarewind`). Those tests need Wyrm in Maven Local, see
+[BUILDING.md](BUILDING.md). Like the rest, this has not been run in a browser.
+
 ## Not done / not verified
 
 - **Not tested against a real Eaglercraft client and server.** The mapping rules are unit tested
