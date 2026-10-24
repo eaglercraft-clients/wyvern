@@ -18,6 +18,7 @@
 package org.eaglercraftclients.wyvern.client;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.eaglercraftclients.wyvern.WyvernConfig;
@@ -64,7 +65,15 @@ public final class WyvernClient implements WyvernPlatform, Runnable {
             super(new File("wyvern.yml"), LOGGER);
         }
 
-        // The packaged defaults are used as they are; the merge with a file that is not there changes nothing.
+        // No file and no YAML: the defaults are what the getters fall back to, except for the one section they read
+        // without a fallback. (Reading config.yml from the jar needs a URL stream, which a browser build lacks.)
+        @Override
+        public Map<String, Object> loadConfig(final File location) {
+            final Map<String, Object> values = new HashMap<>();
+            values.put("dialog-style", new HashMap<String, Object>());
+            return values;
+        }
+
         @Override
         public void save(final File location, final Map<String, Object> config) {
         }

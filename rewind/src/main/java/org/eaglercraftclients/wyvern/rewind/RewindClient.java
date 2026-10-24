@@ -20,6 +20,7 @@ package org.eaglercraftclients.wyvern.rewind;
 import com.viaversion.viarewind.ViaRewindConfig;
 import com.viaversion.viarewind.api.ViaRewindPlatform;
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -56,6 +57,12 @@ public final class RewindClient implements ViaRewindPlatform, Runnable {
         // A file name without a directory, so that reloading never tries to create one.
         InMemoryConfig() {
             super(new File("viarewind.yml"), LOGGER);
+        }
+
+        // No file and no YAML: every option falls back to its default.
+        @Override
+        public Map<String, Object> loadConfig(final File location) {
+            return new HashMap<>();
         }
 
         @Override
