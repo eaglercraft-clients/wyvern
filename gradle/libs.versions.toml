@@ -31,4 +31,5 @@ checkerQual = { group = "org.checkerframework", name = "checker-qual", version.r
 paper = { group = "com.destroystokyo.paper", name = "paper-api", version.ref = "paper" }
 velocity = { group = "com.velocitypowered", name = "velocity-api", version.ref = "velocity" }
 fabricLoader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabricLoader" }
+velocityNative = { group = "com.velocitypowered", name = "velocity-native", version.ref = "velocity" }
 viaProxy = { group = "net.raphimc", name = "ViaProxy", version.ref = "viaProxy" }

@@ -32,6 +32,7 @@ setupViaSubproject("common")
 setupViaSubproject("bukkit")
 setupViaSubproject("velocity")
 setupViaSubproject("fabric")
+setupViaSubproject("rewind")
 
 setupSubproject("wyvern") {
     projectDir = file("universal")

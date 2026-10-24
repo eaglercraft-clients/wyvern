@@ -49,9 +49,19 @@ if (ClientVia.supports(nativeProtocol, serverProtocol)) { /* ClientPipeline.inst
 ```
 
 Tests (`common/src/wyrmTest`) push a real handshake and login through Via's handlers: a 1.12.2 game joins 1.21 and 26.2
-servers, and a 26.2 game joins a 26.3 server. A 1.8 game cannot go up through Wyvern alone: the step from 1.8 to 1.9 is
-ViaRewind's (Wyrm keeps a copy in `third_party/viarewind`). Those tests need Wyrm in Maven Local, see
-[BUILDING.md](BUILDING.md). Like the rest, this has not been run in a browser.
+servers, and a 26.2 game joins a 26.3 server.
+
+**1.8 clients** (the Eaglercraft 1.8 client) need one more piece: the step from 1.8 to 1.9 is ViaRewind's, and ViaRewind
+is built on ViaBackwards' classes, which Wyvern renamed. The `rewind` module is ViaRewind's common code pointed at
+Wyvern's packages (see [NOTICE.md](../NOTICE.md)); `RewindClient` registers it:
+
+```java
+ClientVia.start(new WyvernClient(), new RewindClient());   // Wyvern first
+```
+
+Its tests (`rewind/src/wyrmTest`) take a 1.8 game through a handshake and login to 1.9, 1.12.2, 1.21 and 26.2 servers.
+The server-side plugins (Bukkit, Velocity) for ViaRewind are not part of this module. These tests need Wyrm in Maven
+Local, see [BUILDING.md](BUILDING.md). Like the rest, this has not been run in a browser.
 
 ## Not done / not verified
 
